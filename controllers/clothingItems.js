@@ -1,4 +1,4 @@
-const ClothingItem = require("../models/clothingItem");
+const ClothingItem = require("../models/clothingItems");
 
 const createItem = (req, res) => {
   console.log(req);

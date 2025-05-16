@@ -42,15 +42,17 @@ const deleteItem = (req, res) => {
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then(() => res.status(204).send({}))
-    .catch((e) => {
-      if (e.name === "DocumentNotFoundError") {
+    .then((item) => {
+      res.status(204).send();
+    })
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError") {
         return res.status(404).send({ message: "Item not found" });
+      } else if (err.name === "CastError") {
+        res.status(400).send({ message: "Invalid item ID" });
+      } else {
+        return res.status(500).send({ message: "Error from deleteItem" });
       }
-      if (e.name === "CastError") {
-        return res.status(400).send({ message: "Invalid item ID" });
-      }
-      return res.status(500).send({ message: "Error from deleteItem" });
     });
 };
 

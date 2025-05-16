@@ -10,7 +10,14 @@ mongoose
   .then(() => {
     console.log("connected to DB");
   })
-  .catch(console.error);
+  .catch((err) => {
+    console.log("Error connecting to MongoDB:", err.message);
+    process.exit(1);
+  });
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+});
 
 app.use(express.json());
 

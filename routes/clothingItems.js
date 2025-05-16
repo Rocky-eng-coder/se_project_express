@@ -6,21 +6,21 @@ const {
   updateItem,
   deleteItem,
 } = require("../controllers/clothingItems");
-//CRUD
+// CRUD
 
-//Create
+// Create
 
 router.post("/", createItem);
 
-//Read
+// Read
 
 router.get("/", getItems);
 
-//update
+// update
 
 router.put("/:itemId", updateItem);
 
-//Delete
+// Delete
 
 router.delete("/:itemId", deleteItem);
 

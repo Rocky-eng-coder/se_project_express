@@ -44,7 +44,13 @@ const deleteItem = (req, res) => {
     .orFail()
     .then(() => res.status(204).send({}))
     .catch((e) => {
-      res.status(500).send({ message: "Error from deleteItem", e });
+      if (e.name === "DocumentNotFoundError") {
+        return res.status(404).send({ message: "Item not found" });
+      }
+      if (e.name === "CastError") {
+        return res.status(400).send({ message: "Invalid item ID" });
+      }
+      return res.status(500).send({ message: "Error from deleteItem" });
     });
 };
 

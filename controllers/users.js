@@ -21,7 +21,7 @@ const createUser = (req, res) => {
   User.create({ name, avatar })
     .then((user) => res.status(201).send(user))
     .catch((err) => {
-      console.error(err);
+
       if (err.name === "ValidationError") {
         return res
           .status(BAD_REQUEST)

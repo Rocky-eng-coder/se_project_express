@@ -1,7 +1,38 @@
+const bcrypt = require("bcryptjs");
 const User = require("../models/user");
-const { BAD_REQUEST, NOT_FOUND, DEFAULT } = require("../utils/constants");
+const {
+  BAD_REQUEST,
+  NOT_FOUND,
+  DEFAULT,
+  CONFLICT,
+  UNAUTHORIZED,
+} = require("../utils/constants");
 
-// GET /users
+const JWT = require("jsonwebtoken");
+const { JWT_SECRET } = require("../utils/config");
+
+const login = (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res
+      .status(BAD_REQUEST)
+      .send({ message: "Email and password are required." });
+  }
+
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = JWT.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+      res.send({ token });
+    })
+    .catch(() => {
+      res
+        .status(UNAUTHORIZED)
+        .send({ message: "Incorrect email or password." });
+    });
+};
 
 const getUsers = (req, res) => {
   User.find({})
@@ -15,18 +46,42 @@ const getUsers = (req, res) => {
 };
 
 const createUser = (req, res) => {
-  const { name, avatar } = req.body;
-  console.log("Received:", { name, avatar });
+  const { name, avatar, email, password } = req.body;
+  console.log("Received:", { name, avatar, email });
 
-  User.create({ name, avatar })
-    .then((user) => res.status(201).send(user))
+  if (!email || !password) {
+    return res
+      .status(BAD_REQUEST)
+      .send({ message: "Email and password are required." });
+  }
+
+  bcrypt
+    .hash(password, 10)
+    .then((hashedPassword) => {
+      return User.create({
+        name,
+        avatar,
+        email,
+        password: hashedPassword,
+      });
+    })
+    .then((user) => {
+      const userWithoutPassword = user.toObject();
+      delete userWithoutPassword.password;
+      res.status(201).send(userWithoutPassword);
+    })
     .catch((err) => {
+      if (err.code === 11000) {
+        return res.status(CONFLICT).send({ message: "Email already exists." });
+      }
 
       if (err.name === "ValidationError") {
         return res
           .status(BAD_REQUEST)
           .send({ message: "Invalid data provided for user creation." });
       }
+
+      console.error(err);
       return res
         .status(DEFAULT)
         .send({ message: "An error has occured on the server." });
@@ -43,7 +98,6 @@ const getUser = (req, res) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND).send({ message: "User not found." });
-        // ... 404
       }
       if (err.name === "CastError") {
         return res
@@ -56,4 +110,4 @@ const getUser = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, getUser };
+module.exports = { getUsers, createUser, getUser, login };

@@ -1,5 +1,10 @@
 const ClothingItem = require("../models/clothingItems");
-const { BAD_REQUEST, NOT_FOUND, DEFAULT } = require("../utils/constants");
+const {
+  BAD_REQUEST,
+  NOT_FOUND,
+  DEFAULT,
+  FORBIDDEN,
+} = require("../utils/constants");
 
 const createItem = (req, res) => {
   console.log(req);
@@ -35,10 +40,17 @@ const deleteItem = (req, res) => {
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then((deletedItem) => {
-      res.status(200).send({
-        message: "Item successfully deleted",
-        data: deletedItem,
+    .then((item) => {
+      if (item.owner.toString() !== req.user._id) {
+        return res
+          .status(FORBIDDEN)
+          .send({ message: "You do not have permission to delete this item" });
+      }
+      return item.deleteOne().then(() => {
+        res.status(200).send({
+          message: "Item successfully deleted",
+          data: item,
+        });
       });
     })
     .catch((e) => {

@@ -1,4 +1,5 @@
 const bcrypt = require("bcryptjs");
+const JWT = require("jsonwebtoken");
 const User = require("../models/user");
 const {
   BAD_REQUEST,
@@ -8,7 +9,6 @@ const {
   UNAUTHORIZED,
 } = require("../utils/constants");
 
-const JWT = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
 
 const login = (req, res) => {
@@ -20,24 +20,17 @@ const login = (req, res) => {
       .send({ message: "Email and password are required." });
   }
 
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = JWT.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.send({ token });
+      return res.send({ token });
     })
-    .catch(() => {
-      res
-        .status(UNAUTHORIZED)
-        .send({ message: "Incorrect email or password." });
-    });
-};
-
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.status(200).send(users))
     .catch((err) => {
+      if (err.message === "Incorrect email or password") {
+        return res.status(UNAUTHORIZED).send({ message: err.message });
+      }
       console.error(err);
       return res
         .status(DEFAULT)
@@ -55,20 +48,20 @@ const createUser = (req, res) => {
       .send({ message: "Email and password are required." });
   }
 
-  bcrypt
+  return bcrypt
     .hash(password, 10)
-    .then((hashedPassword) => {
-      return User.create({
+    .then((hashedPassword) =>
+      User.create({
         name,
         avatar,
         email,
         password: hashedPassword,
-      });
-    })
+      })
+    )
     .then((user) => {
       const userWithoutPassword = user.toObject();
       delete userWithoutPassword.password;
-      res.status(201).send(userWithoutPassword);
+      return res.status(201).send(userWithoutPassword);
     })
     .catch((err) => {
       if (err.code === 11000) {
@@ -82,28 +75,6 @@ const createUser = (req, res) => {
       }
 
       console.error(err);
-      return res
-        .status(DEFAULT)
-        .send({ message: "An error has occured on the server." });
-    });
-};
-
-const getUser = (req, res) => {
-  const { userId } = req.params;
-
-  User.findById(userId)
-    .orFail()
-    .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      console.error(err);
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: "User not found." });
-      }
-      if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST)
-          .send({ message: "Invalid user ID format." });
-      }
       return res
         .status(DEFAULT)
         .send({ message: "An error has occured on the server." });

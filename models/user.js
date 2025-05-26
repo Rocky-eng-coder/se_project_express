@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -32,7 +33,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "Password is required."],
     select: false,
-    minlength: [8, "Password must be at least 8 characters long."],
   },
 });
 

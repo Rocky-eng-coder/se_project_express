@@ -33,6 +33,12 @@ process.on("uncaughtException", (err) => {
 
 app.use(requestLogger);
 
+app.get("/crash-test", () => {
+  setTimeout(() => {
+    throw new Error("Server will crash now");
+  }, 0);
+});
+
 app.post("/signup", createUser);
 app.post("/signin", login);
 

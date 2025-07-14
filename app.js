@@ -4,6 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const { errors } = require("celebrate");
+const { validateSignup, validateSignin } = require("./middlewares/validation");
 
 const mainRouter = require("./routes/index");
 const { login, createUser } = require("./controllers/users");
@@ -39,8 +40,8 @@ app.get("/crash-test", () => {
   }, 0);
 });
 
-app.post("/signup", createUser);
-app.post("/signin", login);
+app.post("/signup", validateSignup, createUser);
+app.post("/signin", validateSignin, login);
 
 app.use("/", mainRouter);
 

@@ -22,14 +22,6 @@ module.exports = {
   rules: {
     "no-console": ["warn", { allow: ["error"] }],
     "no-underscore-dangle": ["error", { allow: ["_id"] }],
-    "arrow-body-style": ["error", "as-needed"],
     "no-unused-vars": ["error", { argsIgnorePattern: "^next" }],
-    "import/extensions": [
-      "error",
-      "ignorepackages",
-      {
-        js: "never",
-      },
-    ],
   },
 };

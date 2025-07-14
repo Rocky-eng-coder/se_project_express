@@ -66,9 +66,9 @@ const validateSignin = celebrate({
 const validateIdParam = celebrate({
   [Segments.PARAMS]: Joi.object().keys({
     itemId: Joi.string().hex().length(24).required().messages({
-      "string.length": 'The "id" must be exactly 24 hexadecimal characters',
-      "string.hex": 'The "id" must contain only hexadecimal characters',
-      "string.empty": 'The "id" field must be filled in',
+      "string.length": 'The "itemId" must be exactly 24 hexadecimal characters',
+      "string.hex": 'The "itemId" must contain only hexadecimal characters',
+      "string.empty": 'The "itemId" field must be filled in',
     }),
   }),
 });
@@ -82,7 +82,7 @@ const validateUserUpdate = celebrate({
     }),
     avatar: Joi.string().required().custom(validateURL).messages({
       "string.empty": 'The "avatar" field must be filled in',
-      "string.url": 'The "avatar" field must be a valid URL',
+      "string.uri": 'The "avatar" field must be a valid URL',
     }),
   }),
 });
